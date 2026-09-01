@@ -30,17 +30,17 @@ input::placeholder, textarea::placeholder {
   opacity: 1;
 }
 
-/* Light Colored Custom Suggestion Dropdown */
+/* Clean Custom Suggestion Dropdown */
 .custom-suggestions-box {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   width: 100%;
-  min-width: 250px;
+  min-width: 260px;
   background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   z-index: 999999 !important;
   overflow: hidden;
 }
@@ -49,11 +49,11 @@ input::placeholder, textarea::placeholder {
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 700;
-  color: #1e293b;
+  color: #334155;
   cursor: pointer;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f8fafc;
   background-color: #ffffff;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .custom-suggestion-item:last-child {
@@ -62,7 +62,7 @@ input::placeholder, textarea::placeholder {
 
 .custom-suggestion-item:hover, .custom-suggestion-item:active {
   background-color: #f1f5f9 !important;
-  color: #2563eb !important;
+  color: #4f46e5 !important;
 }
 
 /* =========================================================
@@ -89,12 +89,13 @@ input::placeholder, textarea::placeholder {
   }
   
   .challan-box {
-    border: 2px solid #000000 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 10px !important;
+    padding: 12px !important;
     box-sizing: border-box !important;
   }
 
