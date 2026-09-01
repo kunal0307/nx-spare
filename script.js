@@ -63,14 +63,14 @@ const masterTools = [
 const companies = {
   compA: {
     name: 'NEXTRO ENERGY ENTERPRISES',
-    addressHTML: '<div>BRANCH OFFICE - PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div><div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>',
+    addressHTML: '<div>PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div><div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>',
     email: 'nextroenergyenterprises@gmail.com',
     phone: '+91 9716588121',
     logoPath: 'images/logo-a.png'
   },
   compB: {
     name: 'PROJECTION ENERGY OPC PVT. LTD',
-    addressHTML: '<div>BRANCH OFFICE - PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div><div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>',
+    addressHTML: '<div>PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div><div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>',
     email: 'projectionenergy@gmail.com',
     phone: '+91 9716588121',
     logoPath: 'images/logo-b.png'
