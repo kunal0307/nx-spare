@@ -31,6 +31,34 @@ const masterSpares = [
   "DC DISTRIBUTION BOX (DCDB)"
 ];
 
+// Master Tools List
+const masterTools = [
+  "1/2\" CONDUIT / PIPE BENDER",
+  "3/4\" CONDUIT / PIPE BENDER",
+  "HYDRAULIC CRIMPING TOOL",
+  "MANUAL MC4 CRIMPING TOOL",
+  "SOLAR CABLE STRIPPER",
+  "ROTARY HAMMER DRILL MACHINE",
+  "CORDLESS DRILL / DRIVER 18V",
+  "ANGLE GRINDER 4 INCH",
+  "DIGITAL MULTIMETER (1000V DC/AC)",
+  "DIGITAL CLAMP METER (AC/DC)",
+  "EARTH TESTER / MEGGER TESTER",
+  "SOLAR IRRADIANCE METER",
+  "TORQUE WRENCH SET",
+  "COMBINATION PLIER 8 INCH",
+  "NOSE PLIER 6 INCH",
+  "ADJUSTABLE SPANNER 12 INCH",
+  "RING & OPEN SPANNER SET (6-32MM)",
+  "HEX KEY / ALLEN KEY SET",
+  "MEASURING TAPE 5M / 30M",
+  "SPIRIT LEVEL / MAGNETIC LEVEL 12\"",
+  "HEAVY DUTY EXTENSION BOARD 20M",
+  "SAFETY HARNESS / FULL BODY BELT",
+  "SAFETY HELMET & SAFETY GLOVES",
+  "ALUMINUM EXTENSION LADDER 12FT"
+];
+
 // COMPANY PROFILES CONFIGURATION
 const companies = {
   compA: {
@@ -63,19 +91,21 @@ function showToast(title, message) {
 }
 
 // -------------------------------------------------------------
-// 🔍 SEARCH SUGGESTIONS (MAX 2 ITEMS, RELIABLE POINTER CLICK)
+// 🔍 SEARCH SUGGESTIONS FOR SPARES & TOOLS
 // -------------------------------------------------------------
-function showSuggestions(input) {
+function showSuggestions(input, type) {
   const val = input.value.trim().toUpperCase();
   const box = input.parentElement.querySelector('.custom-suggestions-box');
   if (!box) return;
 
+  const dataset = type === 'tools' ? masterTools : masterSpares;
+
   if (!val) {
-    renderSuggestions(box, input, masterSpares.slice(0, 2));
+    renderSuggestions(box, input, dataset.slice(0, 2));
     return;
   }
 
-  const matches = masterSpares.filter(item => item.toUpperCase().includes(val)).slice(0, 2);
+  const matches = dataset.filter(item => item.toUpperCase().includes(val)).slice(0, 2);
   
   if (matches.length > 0) {
     renderSuggestions(box, input, matches);
@@ -91,7 +121,6 @@ function renderSuggestions(box, input, items) {
     div.className = 'custom-suggestion-item';
     div.innerText = it;
     
-    // onpointerdown triggers immediately before blur
     div.onpointerdown = function(e) {
       e.preventDefault();
       input.value = it;
@@ -103,7 +132,7 @@ function renderSuggestions(box, input, items) {
   box.classList.remove('hidden');
 }
 
-// Hide dropdown when clicking outside
+// Hide dropdown on outside click
 document.addEventListener('pointerdown', function(e) {
   if (!e.target.closest('.custom-suggestions-box') && !e.target.classList.contains('item-name')) {
     document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
@@ -122,7 +151,7 @@ function ensureCountryCode(input) {
   if (!input.value.startsWith('+91 ')) input.value = '+91 ';
 }
 
-// Real-time Uppercase Converter
+// Uppercase Auto Convert
 document.addEventListener('input', function (e) {
   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
     if (e.target.type === 'text' || e.target.tagName === 'TEXTAREA') {
@@ -163,7 +192,7 @@ async function fetchNextChallanFromSheet() {
 }
 
 // -------------------------------------------------------------
-// 💾 100% RELIABLE DIRECT PDF DOWNLOAD (CONVERTS INPUTS TO SPANS)
+// 💾 100% RELIABLE DIRECT PDF DOWNLOAD (SPARES + TOOLS)
 // -------------------------------------------------------------
 async function saveChallanAndDownloadPDF() {
   document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
@@ -183,20 +212,31 @@ async function saveChallanAndDownloadPDF() {
   const compKey = document.getElementById('compSelect').value;
   const notes = document.getElementById('notesInput')?.value || '';
 
-  // Gather items
-  const items = [];
-  document.querySelectorAll('#itemRows tr').forEach(r => {
+  // Gather Spares
+  const spares = [];
+  document.querySelectorAll('#spareRows tr').forEach(r => {
     const name = r.querySelector('.item-name')?.value.trim() || '';
     const issuedQty = r.querySelector('.item-issued-qty')?.value || '0';
     const returnQty = r.querySelector('.item-return-qty')?.value || '';
     const consumedQty = r.querySelector('.item-consumed-qty')?.value || '';
     if (name !== '') {
-      items.push({ name, issuedQty, returnQty, consumedQty });
+      spares.push({ name, issuedQty, returnQty, consumedQty });
     }
   });
 
-  if (items.length === 0) {
-    alert("Please add at least one item description before saving!");
+  // Gather Tools
+  const tools = [];
+  document.querySelectorAll('#toolRows tr').forEach(r => {
+    const name = r.querySelector('.item-name')?.value.trim() || '';
+    const issuedQty = r.querySelector('.tool-issued-qty')?.value || '0';
+    const returnQty = r.querySelector('.tool-return-qty')?.value || '';
+    if (name !== '') {
+      tools.push({ name, issuedQty, returnQty });
+    }
+  });
+
+  if (spares.length === 0 && tools.length === 0) {
+    alert("Please add at least one Spare or Tool before saving!");
     return;
   }
 
@@ -215,15 +255,16 @@ async function saveChallanAndDownloadPDF() {
     siteName,
     siteAddress,
     notes,
-    items,
+    spares,
+    tools,
     savedAt: new Date().toISOString()
   };
 
-  // 1. Google Sheet Background Sync
+  // 1. Google Sheet Sync
   try {
     if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("REPLACE_WITH_YOUR")) {
       const url = `${GOOGLE_SCRIPT_URL}?action=save&data=${encodeURIComponent(JSON.stringify(payload))}`;
-      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync error:", err));
+      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync:", err));
     }
   } catch (err) {
     console.error("Sheet error:", err);
@@ -240,14 +281,13 @@ async function saveChallanAndDownloadPDF() {
     }
   }
 
-  // 3. Clone DOM & Convert ALL live inputs to permanent Spans
+  // 3. Clone & Convert Live Inputs to Printed Text Spans
   const element = document.getElementById('challanSheet');
   const clone = element.cloneNode(true);
 
-  // Remove Action Column and Add Buttons from clone
+  // Remove Action Column and Add Buttons
   clone.querySelectorAll('.no-print, .action-col, .custom-suggestions-box').forEach(el => el.remove());
 
-  // Replace all inputs with clean text spans so canvas never renders blank
   const originalInputs = element.querySelectorAll('input, textarea');
   const clonedInputs = clone.querySelectorAll('input, textarea');
 
@@ -257,7 +297,7 @@ async function saveChallanAndDownloadPDF() {
       const span = document.createElement('span');
       span.innerText = orig.value || orig.placeholder || '';
       span.style.fontWeight = target.classList.contains('font-black') ? '900' : (target.classList.contains('font-bold') ? '700' : '600');
-      span.style.fontSize = 'inherit';
+      span.style.fontSize = '12px';
       span.style.textTransform = 'uppercase';
       span.style.display = 'inline-block';
       span.style.width = '100%';
@@ -280,7 +320,7 @@ async function saveChallanAndDownloadPDF() {
     await html2pdf().set(opt).from(clone).save();
     showToast(`Challan ${challanNo} Downloaded!`, "Saved directly to Downloads folder.");
   } catch (error) {
-    console.warn("Direct PDF render error, fallback to print:", error);
+    console.warn("Direct PDF error, fallback to print:", error);
     window.print();
   } finally {
     saveBtn.disabled = false;
@@ -288,7 +328,6 @@ async function saveChallanAndDownloadPDF() {
     btnText.innerText = "Save as PDF";
     renderHistoryTable();
 
-    // Auto-update next sequential serial
     setTimeout(() => {
       fetchNextChallanFromSheet();
     }, 1000);
@@ -329,7 +368,9 @@ function renderHistoryTable() {
       <td class="p-2">${c.issueDate || '-'}</td>
       <td class="p-2 font-semibold text-slate-800">${c.employeeName || '-'}</td>
       <td class="p-2">${c.siteName || '-'}</td>
-      <td class="p-2 text-center font-bold">${c.items ? c.items.length : 0} items</td>
+      <td class="p-2 text-center font-bold text-slate-700">
+        ${c.spares ? c.spares.length : 0} Spares / ${c.tools ? c.tools.length : 0} Tools
+      </td>
       <td class="p-2 text-center">
         <button onclick="loadChallanFromHistory(${index})" type="button" class="bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-2 py-1 rounded text-xs mr-1 cursor-pointer">
           👁️ View
@@ -373,21 +414,41 @@ function loadChallanFromHistory(index) {
     document.getElementById('notesInput').value = c.notes || "";
   }
 
-  const tbody = document.getElementById('itemRows');
-  if (c.items && c.items.length > 0) {
-    tbody.innerHTML = c.items.map((item, i) => `
-      <tr class="item-entry-row">
-        <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 sr-no">${i + 1}</td>
+  // Load Spares
+  const spareTbody = document.getElementById('spareRows');
+  if (c.spares && c.spares.length > 0) {
+    spareTbody.innerHTML = c.spares.map((item, i) => `
+      <tr class="spare-entry-row">
+        <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 spare-sr">${i + 1}</td>
         <td class="border border-slate-900 p-1.5">
           <div class="relative w-full">
-            <input type="text" autocomplete="off" value="${item.name}" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-xs" />
+            <input type="text" autocomplete="off" value="${item.name}" oninput="showSuggestions(this, 'spares')" onfocus="showSuggestions(this, 'spares')" placeholder="Search spare item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
             <div class="custom-suggestions-box hidden no-print"></div>
           </div>
         </td>
-        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.issuedQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty" /></td>
-        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.returnQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent" /></td>
-        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.consumedQty}" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent" /></td>
-        <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.issuedQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
+        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.returnQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
+        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.consumedQty}" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
+        <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteSpareRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // Load Tools
+  const toolTbody = document.getElementById('toolRows');
+  if (c.tools && c.tools.length > 0) {
+    toolTbody.innerHTML = c.tools.map((item, i) => `
+      <tr class="tool-entry-row">
+        <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 tool-sr">${i + 1}</td>
+        <td class="border border-slate-900 p-1.5">
+          <div class="relative w-full">
+            <input type="text" autocomplete="off" value="${item.name}" oninput="showSuggestions(this, 'tools')" onfocus="showSuggestions(this, 'tools')" placeholder="Search tool..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
+            <div class="custom-suggestions-box hidden no-print"></div>
+          </div>
+        </td>
+        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.issuedQty}" class="w-full text-center outline-none font-bold text-slate-900 tool-issued-qty text-[12px]" /></td>
+        <td class="border border-slate-900 p-1.5 text-center"><input type="number" value="${item.returnQty}" class="w-full text-center outline-none font-bold text-slate-900 tool-return-qty bg-transparent text-[12px]" /></td>
+        <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteToolRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
       </tr>
     `).join('');
   }
@@ -413,7 +474,7 @@ function clearAllHistory() {
 }
 
 // -------------------------------------------------------------
-// INITIALIZATION & HANDLERS
+// INITIALIZATION & UI HANDLERS
 // -------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('issueDate').valueAsDate = new Date();
@@ -444,20 +505,34 @@ function createNewChallan() {
     document.getElementById('notesInput').value = "";
   }
 
-  const tbody = document.getElementById('itemRows');
-  tbody.innerHTML = `
-    <tr class="item-entry-row">
-      <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 sr-no">1</td>
+  document.getElementById('spareRows').innerHTML = `
+    <tr class="spare-entry-row">
+      <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 spare-sr">1</td>
       <td class="border border-slate-900 p-1.5">
         <div class="relative w-full">
-          <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-xs" />
+          <input type="text" autocomplete="off" oninput="showSuggestions(this, 'spares')" onfocus="showSuggestions(this, 'spares')" placeholder="Search spare item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
           <div class="custom-suggestions-box hidden no-print"></div>
         </div>
       </td>
-      <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty" /></td>
-      <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent" /></td>
-      <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent" /></td>
-      <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+      <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
+      <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
+      <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
+      <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteSpareRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+    </tr>
+  `;
+
+  document.getElementById('toolRows').innerHTML = `
+    <tr class="tool-entry-row">
+      <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 tool-sr">1</td>
+      <td class="border border-slate-900 p-1.5">
+        <div class="relative w-full">
+          <input type="text" autocomplete="off" oninput="showSuggestions(this, 'tools')" onfocus="showSuggestions(this, 'tools')" placeholder="Search tool (e.g. Pipe Bender, Drill)..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
+          <div class="custom-suggestions-box hidden no-print"></div>
+        </div>
+      </td>
+      <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-bold text-slate-900 tool-issued-qty text-[12px]" /></td>
+      <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-bold text-slate-900 tool-return-qty bg-transparent text-[12px]" /></td>
+      <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteToolRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
     </tr>
   `;
 }
@@ -498,36 +573,68 @@ function calculateConsumed(element) {
   }
 }
 
-// Add Row Directly Under Table with 12px Font
-document.getElementById('addBtn').addEventListener('click', function() {
-  const tbody = document.getElementById('itemRows');
+// -------------------------------------------------------------
+// ADD & DELETE ROWS FOR SPARES & TOOLS
+// -------------------------------------------------------------
+document.getElementById('addSpareBtn').addEventListener('click', function() {
+  const tbody = document.getElementById('spareRows');
   const count = tbody.querySelectorAll('tr').length + 1;
   const tr = document.createElement('tr');
-  tr.className = "item-entry-row";
+  tr.className = "spare-entry-row";
   
   tr.innerHTML = `
-    <td class="border border-slate-900 p-2 text-center font-bold text-slate-500 sr-no">${count}</td>
-    <td class="border border-slate-900 p-2">
+    <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 spare-sr">${count}</td>
+    <td class="border border-slate-900 p-1.5">
       <div class="relative w-full">
-        <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
+        <input type="text" autocomplete="off" oninput="showSuggestions(this, 'spares')" onfocus="showSuggestions(this, 'spares')" placeholder="Search spare item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
         <div class="custom-suggestions-box hidden no-print"></div>
       </div>
     </td>
-    <td class="border border-slate-900 p-2 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
-    <td class="border border-slate-900 p-2 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
-    <td class="border border-slate-900 p-2 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
-    <td class="border border-slate-900 p-2 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+    <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
+    <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
+    <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
+    <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteSpareRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
   `;
   tbody.appendChild(tr);
 });
 
-
-function deleteRow(btn) {
+function deleteSpareRow(btn) {
   const row = btn.closest('tr');
   row.parentNode.removeChild(row);
   
-  const allRows = document.querySelectorAll('#itemRows tr');
+  const allRows = document.querySelectorAll('#spareRows tr');
   allRows.forEach((r, idx) => {
-    r.querySelector('.sr-no').innerText = idx + 1;
+    r.querySelector('.spare-sr').innerText = idx + 1;
+  });
+}
+
+document.getElementById('addToolBtn').addEventListener('click', function() {
+  const tbody = document.getElementById('toolRows');
+  const count = tbody.querySelectorAll('tr').length + 1;
+  const tr = document.createElement('tr');
+  tr.className = "tool-entry-row";
+  
+  tr.innerHTML = `
+    <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 tool-sr">${count}</td>
+    <td class="border border-slate-900 p-1.5">
+      <div class="relative w-full">
+        <input type="text" autocomplete="off" oninput="showSuggestions(this, 'tools')" onfocus="showSuggestions(this, 'tools')" placeholder="Search tool (e.g. Pipe Bender, Drill)..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
+        <div class="custom-suggestions-box hidden no-print"></div>
+      </div>
+    </td>
+    <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-bold text-slate-900 tool-issued-qty text-[12px]" /></td>
+    <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-bold text-slate-900 tool-return-qty bg-transparent text-[12px]" /></td>
+    <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteToolRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+function deleteToolRow(btn) {
+  const row = btn.closest('tr');
+  row.parentNode.removeChild(row);
+  
+  const allRows = document.querySelectorAll('#toolRows tr');
+  allRows.forEach((r, idx) => {
+    r.querySelector('.tool-sr').innerText = idx + 1;
   });
 }

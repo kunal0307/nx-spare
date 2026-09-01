@@ -70,7 +70,7 @@ input::placeholder, textarea::placeholder {
    ========================================================= */
 @page {
   size: A4 portrait;
-  margin: 6mm 6mm;
+  margin: 5mm 5mm;
 }
 
 @media print {
@@ -94,7 +94,7 @@ input::placeholder, textarea::placeholder {
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 10px !important;
+    padding: 8px !important;
     box-sizing: border-box !important;
   }
 

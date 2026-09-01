@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spare / Fitting Issue Challan</title>
+  <title>Spare & Tools Issue Challan</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -44,12 +44,12 @@
   </div>
 
   <!-- MAIN CHALLAN SHEET -->
-  <div id="challanSheet" class="challan-box max-w-4xl w-full bg-white border-2 border-slate-900 p-5 sm:p-7 shadow-xl">
+  <div id="challanSheet" class="challan-box max-w-4xl w-full bg-white border-2 border-slate-900 p-5 sm:p-6 shadow-xl">
     
-    <!-- 1. HEADER SECTION (With Increased Logo Size & Bottom Gap on Header) -->
-    <table class="w-full border-collapse pb-4 mb-4 border-b-2 border-slate-900">
+    <!-- 1. HEADER SECTION -->
+    <table class="w-full border-collapse pb-3 mb-3 border-b-2 border-slate-900">
       <tr>
-        <!-- Left: Larger Logo + Company Info -->
+        <!-- Left: Logo + Company Info -->
         <td class="align-top pr-3" style="width: 60%;">
           <table class="w-full">
             <tr>
@@ -62,7 +62,7 @@
               <td style="vertical-align: top; padding-left: 12px;">
                 <div id="compName" class="font-black text-base sm:text-lg uppercase text-slate-950 tracking-tight leading-tight">NEXTRO ENERGY ENTERPRISES</div>
                 <div id="compAddress" class="text-[12px] text-slate-600 leading-snug my-1.5 font-medium select-none">
-                  <div>BRANCH OFFICE - PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div>
+                  <div>PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div>
                   <div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>
                 </div>
                 <div class="text-[12px] text-slate-700 font-bold flex flex-wrap gap-x-3 pt-0.5">
@@ -74,28 +74,28 @@
           </table>
         </td>
 
-        <!-- Right: Challan Header Box with Proper Padding & Spacing -->
+        <!-- Right: Challan Header Info -->
         <td class="align-top" style="width: 40%;">
           <div class="border border-slate-900 bg-slate-50 p-2.5 rounded shadow-sm">
             <div class="bg-slate-900 text-white text-center font-bold text-[11px] uppercase py-1 mb-2 tracking-wider">
-              Spare / Fitting Issue Challan
+              Spare / Fitting & Tools Challan
             </div>
             <table class="w-full text-[12px] font-bold">
               <tr>
-                <td class="text-right pr-2 py-1 text-slate-500 whitespace-nowrap">Challan No:</td>
-                <td class="text-right py-1">
+                <td class="text-right pr-2 py-0.5 text-slate-500 whitespace-nowrap">Challan No:</td>
+                <td class="text-right py-0.5">
                   <input type="text" id="challanNo" value="Loading..." class="text-right font-black w-full outline-none text-blue-700 text-[12px] bg-transparent" />
                 </td>
               </tr>
               <tr>
-                <td class="text-right pr-2 py-1 text-slate-500 whitespace-nowrap">Issue Date:</td>
-                <td class="text-right py-1">
+                <td class="text-right pr-2 py-0.5 text-slate-500 whitespace-nowrap">Issue Date:</td>
+                <td class="text-right py-0.5">
                   <input type="date" id="issueDate" class="text-right font-bold w-full outline-none text-slate-900 text-[12px] bg-transparent" />
                 </td>
               </tr>
               <tr>
-                <td class="text-right pr-2 py-1 text-slate-500 whitespace-nowrap">Return Date:</td>
-                <td class="text-right py-1">
+                <td class="text-right pr-2 py-0.5 text-slate-500 whitespace-nowrap">Return Date:</td>
+                <td class="text-right py-0.5">
                   <input type="text" id="returnDate" placeholder="--/--/----" onfocus="(this.type='date')" onblur="if(!this.value) { this.type='text'; this.placeholder='--/--/----'; }" class="text-right font-bold w-full outline-none text-slate-900 text-[12px] bg-transparent" />
                 </td>
               </tr>
@@ -105,15 +105,15 @@
       </tr>
     </table>
 
-    <!-- 2. TWO COLUMN DETAILS BOXES (Gap below Return Date Section) -->
-    <table class="w-full border-collapse pb-4 mb-4 border-b-2 border-slate-900" style="table-layout: fixed;">
+    <!-- 2. TWO COLUMN DETAILS BOXES -->
+    <table class="w-full border-collapse pb-3 mb-3 border-b-2 border-slate-900" style="table-layout: fixed;">
       <tr>
         <!-- Left Box: Issued To -->
-        <td style="width: 49%; vertical-align: top;" class="border border-slate-900 p-3 bg-slate-50 rounded">
+        <td style="width: 49%; vertical-align: top;" class="border border-slate-900 p-2.5 bg-slate-50 rounded">
           <div class="font-bold text-[12px] uppercase border-b border-slate-900 pb-1 mb-2 bg-slate-200 px-1.5 text-slate-900">
             Issued To (Bearer Details)
           </div>
-          <div class="space-y-2 text-[12px]">
+          <div class="space-y-1.5 text-[12px]">
             <div>
               <label class="text-slate-500 block text-[10px] font-bold uppercase">Employee Name:</label>
               <input type="text" id="carrierName" placeholder="ENTER EMPLOYEE NAME" class="w-full bg-transparent border-b border-slate-300 font-bold outline-none uppercase text-[12px] py-0.5" />
@@ -128,11 +128,11 @@
         <td style="width: 2%;"></td>
 
         <!-- Right Box: Destination Site -->
-        <td style="width: 49%; vertical-align: top;" class="border border-slate-900 p-3 bg-slate-50 rounded">
+        <td style="width: 49%; vertical-align: top;" class="border border-slate-900 p-2.5 bg-slate-50 rounded">
           <div class="font-bold text-[12px] uppercase border-b border-slate-900 pb-1 mb-2 bg-slate-200 px-1.5 text-slate-900">
             Destination Site Details
           </div>
-          <div class="space-y-2 text-[12px]">
+          <div class="space-y-1.5 text-[12px]">
             <div>
               <label class="text-slate-500 block text-[10px] font-bold uppercase">Site Name:</label>
               <input type="text" id="destParty" placeholder="ENTER SITE NAME" class="w-full bg-transparent border-b border-slate-300 font-bold outline-none uppercase text-[12px] py-0.5" />
@@ -146,45 +146,87 @@
       </tr>
     </table>
 
-    <!-- 3. ITEMS TABLE -->
+    <!-- 3. TABLE 1: SPARES & FITTINGS ISSUE CHALLAN -->
     <div class="mb-4">
+      <div class="bg-slate-900 text-white font-bold text-[11px] uppercase py-1 px-2 mb-1 tracking-wider">
+        Spares & Fittings Issue Challan
+      </div>
       <table class="w-full text-[12px] border border-slate-900 border-collapse">
-        <thead class="bg-slate-900 text-white font-bold text-[12px]">
+        <thead class="bg-slate-200 text-slate-900 font-bold text-[11px]">
           <tr>
-            <th class="border border-slate-900 p-2 text-center" style="width: 7%;">#</th>
-            <th class="border border-slate-900 p-2 text-left" style="width: 53%;">Item / Spare / Fitting Description</th>
-            <th class="border border-slate-900 p-2 text-center" style="width: 13%;">Issued Qty</th>
-            <th class="border border-slate-900 p-2 text-center" style="width: 13%;">Return Qty</th>
-            <th class="border border-slate-900 p-2 text-center" style="width: 14%;">Consumed Qty</th>
-            <th class="border border-slate-900 p-2 text-center action-col no-print" style="width: 5%;">✖</th>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 7%;">#</th>
+            <th class="border border-slate-900 p-1.5 text-left" style="width: 53%;">Item / Spare / Fitting Description</th>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 13%;">Issued Qty</th>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 13%;">Return Qty</th>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 14%;">Consumed Qty</th>
+            <th class="border border-slate-900 p-1.5 text-center action-col no-print" style="width: 5%;">✖</th>
           </tr>
         </thead>
-        <tbody id="itemRows" class="bg-white">
-          <tr class="item-entry-row">
-            <td class="border border-slate-900 p-2 text-center font-bold text-slate-500 sr-no">1</td>
-            <td class="border border-slate-900 p-2">
+        <tbody id="spareRows" class="bg-white">
+          <tr class="spare-entry-row">
+            <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 spare-sr">1</td>
+            <td class="border border-slate-900 p-1.5">
               <div class="relative w-full">
-                <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
+                <input type="text" autocomplete="off" oninput="showSuggestions(this, 'spares')" onfocus="showSuggestions(this, 'spares')" placeholder="Search spare item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
                 <div class="custom-suggestions-box hidden no-print"></div>
               </div>
             </td>
-            <td class="border border-slate-900 p-2 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
-            <td class="border border-slate-900 p-2 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
-            <td class="border border-slate-900 p-2 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
-            <td class="border border-slate-900 p-2 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
+            <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteSpareRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Add Row Button -->
-      <div class="mt-3 no-print flex justify-start">
-        <button id="addBtn" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded shadow cursor-pointer flex items-center gap-1.5 transition">
-          + Add Item Row
+      <!-- Add Spare Button -->
+      <div class="mt-2 no-print flex justify-start">
+        <button id="addSpareBtn" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1 rounded shadow cursor-pointer flex items-center gap-1.5 transition">
+          + Add Spare Row
         </button>
       </div>
     </div>
 
-    <!-- 4. SIGNATURES & NOTES -->
+    <!-- 4. TABLE 2: TOOLS ISSUE CHALLAN -->
+    <div class="mb-4">
+      <div class="bg-slate-900 text-white font-bold text-[11px] uppercase py-1 px-2 mb-1 tracking-wider">
+        Tools Issue Challan
+      </div>
+      <table class="w-full text-[12px] border border-slate-900 border-collapse">
+        <thead class="bg-slate-200 text-slate-900 font-bold text-[11px]">
+          <tr>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 7%;">#</th>
+            <th class="border border-slate-900 p-1.5 text-left" style="width: 63%;">Item / Tool / Equipment Description</th>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 15%;">Issued Quantity</th>
+            <th class="border border-slate-900 p-1.5 text-center" style="width: 15%;">Return Quantity</th>
+            <th class="border border-slate-900 p-1.5 text-center action-col no-print" style="width: 5%;">✖</th>
+          </tr>
+        </thead>
+        <tbody id="toolRows" class="bg-white">
+          <tr class="tool-entry-row">
+            <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 tool-sr">1</td>
+            <td class="border border-slate-900 p-1.5">
+              <div class="relative w-full">
+                <input type="text" autocomplete="off" oninput="showSuggestions(this, 'tools')" onfocus="showSuggestions(this, 'tools')" placeholder="Search tool (e.g. Pipe Bender, Drill)..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
+                <div class="custom-suggestions-box hidden no-print"></div>
+              </div>
+            </td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-bold text-slate-900 tool-issued-qty text-[12px]" /></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-bold text-slate-900 tool-return-qty bg-transparent text-[12px]" /></td>
+            <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteToolRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Add Tool Button -->
+      <div class="mt-2 no-print flex justify-start">
+        <button id="addToolBtn" type="button" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1 rounded shadow cursor-pointer flex items-center gap-1.5 transition">
+          + Add Tool Row
+        </button>
+      </div>
+    </div>
+
+    <!-- 5. SIGNATURES & NOTES -->
     <table class="w-full border-t-2 border-slate-900 pt-3 text-[12px]" style="table-layout: fixed;">
       <tr>
         <td style="width: 50%; vertical-align: top; padding-right: 20px;">
@@ -211,7 +253,7 @@
 
   </div>
 
-  <!-- 5. LOCAL HISTORY TABLE -->
+  <!-- 6. LOCAL HISTORY TABLE -->
   <div class="max-w-4xl w-full bg-white border border-slate-300 rounded-lg shadow-sm p-4 mt-6 no-print text-[12px]">
     <div class="flex justify-between items-center mb-3">
       <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
@@ -230,7 +272,7 @@
             <th class="p-2">Issue Date</th>
             <th class="p-2">Employee Name</th>
             <th class="p-2">Site Name</th>
-            <th class="p-2 text-center">Items Count</th>
+            <th class="p-2 text-center">Spares / Tools</th>
             <th class="p-2 text-center">Actions</th>
           </tr>
         </thead>
