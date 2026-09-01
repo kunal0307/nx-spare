@@ -638,3 +638,59 @@ function deleteToolRow(btn) {
     r.querySelector('.tool-sr').innerText = idx + 1;
   });
 }
+
+// -------------------------------------------------------------
+// 💬 DIRECT WHATSAPP GROUP SHARING
+// -------------------------------------------------------------
+function shareOnWhatsApp() {
+  const challanNo = document.getElementById('challanNo').value.trim();
+  const issueDate = document.getElementById('issueDate').value;
+  const companyName = document.getElementById('compName').innerText.trim();
+  const employeeName = document.getElementById('carrierName').value.trim();
+  const contactNo = document.getElementById('carrierPhone').value.trim();
+  const siteName = document.getElementById('destParty').value.trim();
+  const siteAddress = document.getElementById('destAddress').value.trim();
+
+  // 1. Gather Spares
+  let sparesText = "";
+  document.querySelectorAll('#spareRows tr').forEach((r, idx) => {
+    const name = r.querySelector('.item-name')?.value.trim();
+    const qty = r.querySelector('.item-issued-qty')?.value || '0';
+    if (name) {
+      sparesText += `  ${idx + 1}. ${name} (Qty: ${qty})\n`;
+    }
+  });
+
+  // 2. Gather Tools
+  let toolsText = "";
+  document.querySelectorAll('#toolRows tr').forEach((r, idx) => {
+    const name = r.querySelector('.item-name')?.value.trim();
+    const qty = r.querySelector('.tool-issued-qty')?.value || '0';
+    if (name) {
+      toolsText += `  ${idx + 1}. ${name} (Qty: ${qty})\n`;
+    }
+  });
+
+  // 3. Create Professional Formatted WhatsApp Message
+  let message = `*📦 ${companyName}*\n`;
+  message += `*📋 CHALLAN NO:* ${challanNo}\n`;
+  message += `*📅 DATE:* ${issueDate}\n`;
+  message += `------------------------------------\n`;
+  message += `*👤 ISSUED TO:* ${employeeName || 'N/A'} (${contactNo})\n`;
+  message += `*📍 SITE:* ${siteName || 'N/A'}\n`;
+  if (siteAddress) message += `*🏢 LOCATION:* ${siteAddress}\n`;
+  message += `------------------------------------\n`;
+
+  if (sparesText) {
+    message += `*⚙️ SPARES & FITTINGS:*\n${sparesText}\n`;
+  }
+  if (toolsText) {
+    message += `*🛠️ TOOLS & EQUIPMENT:*\n${toolsText}\n`;
+  }
+
+  message += `_Generated via Issue Challan System_`;
+
+  // 4. Open WhatsApp
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, '_blank');
+}
