@@ -8,93 +8,95 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Stable HTML2PDF Library -->
+  <!-- PDF Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-slate-100 p-2 sm:p-4 md:p-6 flex flex-col items-center font-sans text-slate-800">
+<body class="bg-slate-200 p-2 sm:p-4 flex flex-col items-center font-sans text-slate-800 antialiased">
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed top-4 right-4 z-50 hidden bg-emerald-600 text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-3 transition-all">
-    <span class="text-xl">✅</span>
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden bg-slate-900 text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-3 transition-all border border-slate-700">
+    <span class="text-base">✅</span>
     <div>
-      <h5 class="font-bold text-sm" id="toastTitle">Saved!</h5>
-      <p class="text-xs text-emerald-100" id="toastMsg">PDF downloaded & server updated.</p>
+      <h5 class="font-bold text-xs" id="toastTitle">Saved!</h5>
+      <p class="text-[11px] text-slate-300" id="toastMsg">PDF downloaded & server updated.</p>
     </div>
   </div>
 
   <!-- Top Action Bar -->
   <div class="max-w-4xl w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-4 gap-3 no-print">
     <div class="flex items-center gap-2">
-      <span class="text-xs font-bold text-slate-600 whitespace-nowrap">Company:</span>
-      <select id="compSelect" onchange="switchCompany(this.value)" class="w-full sm:w-auto bg-indigo-600 text-white font-bold text-xs px-3 py-2 rounded-lg outline-none cursor-pointer">
+      <span class="text-xs font-bold text-slate-600 uppercase">Company:</span>
+      <select id="compSelect" onchange="switchCompany(this.value)" class="w-full sm:w-auto bg-white border border-slate-300 text-slate-800 font-bold text-xs px-3.5 py-2 rounded-lg shadow-sm outline-none cursor-pointer">
         <option value="compA">Company A: NEXTRO ENERGY ENTERPRISES</option>
         <option value="compB">Company B: PROJECTION ENERGY OPC PVT. LTD</option>
       </select>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="createNewChallan()" type="button" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-lg shadow cursor-pointer flex items-center gap-1.5">
+      <button onclick="createNewChallan()" type="button" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-lg shadow cursor-pointer flex items-center gap-1.5 transition">
         <span id="syncLoader" class="hidden animate-spin text-xs">🔄</span> + New Challan
       </button>
-      <button id="savePdfBtn" onclick="saveChallanAndDownloadPDF()" type="button" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2 rounded-lg shadow cursor-pointer flex items-center gap-1.5">
+      <button id="savePdfBtn" onclick="saveChallanAndDownloadPDF()" type="button" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2 rounded-lg shadow cursor-pointer flex items-center gap-1.5 transition active:scale-95">
         <span id="saveBtnIcon">💾</span> <span id="saveBtnText">Save as PDF</span>
       </button>
     </div>
   </div>
 
-  <!-- MAIN CHALLAN SHEET (Strict Table-based layout to prevent PDF Overlap) -->
-  <div id="challanSheet" class="challan-box max-w-4xl w-full bg-white border-2 border-black p-4 sm:p-5 shadow-md">
+  <!-- MAIN CHALLAN SHEET (Strict Flat Table Layout for 100% Crisp PDF) -->
+  <div id="challanSheet" class="challan-box max-w-4xl w-full bg-white border-2 border-slate-900 p-5 sm:p-7 shadow-xl">
     
-    <!-- 1. TOP: COMPANY HEADER -->
-    <table class="w-full border-b-2 border-black pb-3 mb-3">
+    <!-- 1. HEADER SECTION -->
+    <table class="w-full border-collapse pb-3 mb-3 border-b-2 border-slate-900">
       <tr>
-        <!-- Left Details -->
-        <td class="w-[62%] align-top pr-2">
-          <div class="flex items-start gap-3">
-            <div class="w-20 h-16 border border-slate-300 rounded flex items-center justify-center relative overflow-hidden bg-slate-50 flex-shrink-0">
-              <img id="compLogo" src="images/logo-a.png" alt="Company Logo" class="max-h-full max-w-full object-contain" onerror="handleLogoError()" />
-              <span id="logoText" class="text-[9px] text-slate-400 text-center px-1 hidden"></span>
-            </div>
-            <div class="flex-1 overflow-hidden">
-              <div id="compName" class="font-black text-sm sm:text-base text-slate-900 w-full uppercase leading-tight tracking-tight">NEXTRO ENERGY ENTERPRISES</div>
-              
-              <div id="compAddress" class="text-[10px] text-slate-600 w-full leading-tight my-1 font-medium select-none">
-                <div>BRANCH OFFICE - PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div>
-                <div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>
-              </div>
-              
-              <div class="text-[10px] text-slate-700 font-medium flex flex-wrap gap-x-3">
-                <div><strong>CONTACT:</strong> <span id="compPhone" class="font-semibold">+91 9716588121</span></div>
-                <div><strong>EMAIL:</strong> <span id="compEmail">nextroenergyenterprises@gmail.com</span></div>
-              </div>
-            </div>
-          </div>
+        <!-- Left: Logo + Company Info -->
+        <td class="align-top pr-3" style="width: 62%;">
+          <table class="w-full">
+            <tr>
+              <td style="width: 76px; vertical-align: top;">
+                <div class="w-18 h-18 border border-slate-200 rounded flex items-center justify-center p-1 bg-slate-50">
+                  <img id="compLogo" src="images/logo-a.png" alt="Logo" class="max-h-16 max-w-16 object-contain" onerror="handleLogoError()" />
+                  <span id="logoText" class="text-[9px] text-slate-400 hidden font-bold"></span>
+                </div>
+              </td>
+              <td style="vertical-align: top; padding-left: 10px;">
+                <div id="compName" class="font-black text-base uppercase text-slate-950 tracking-tight leading-tight">NEXTRO ENERGY ENTERPRISES</div>
+                <div id="compAddress" class="text-[10.5px] text-slate-600 leading-tight my-1.5 font-medium select-none">
+                  <div>BRANCH OFFICE - PLOT NO. B-17, NEAR METRO PILLAR NO. 163,</div>
+                  <div>NEW ASHOK NAGAR, NEW DELHI – 110096</div>
+                </div>
+                <div class="text-[10px] text-slate-700 font-bold flex flex-wrap gap-x-3 pt-0.5">
+                  <div><span class="text-slate-400 uppercase">Contact:</span> <span id="compPhone">+91 9716588121</span></div>
+                  <div><span class="text-slate-400 uppercase">Email:</span> <span id="compEmail" class="lowercase font-semibold">nextroenergyenterprises@gmail.com</span></div>
+                </div>
+              </td>
+            </tr>
+          </table>
         </td>
 
-        <!-- Right Challan Box -->
-        <td class="w-[38%] align-top">
-          <div class="border border-black p-1.5 rounded bg-slate-50/40">
-            <div class="bg-black text-white px-1 py-0.5 font-bold text-[10px] uppercase mb-1 text-center tracking-wider">
+        <!-- Right: Challan Header Box -->
+        <td class="align-top" style="width: 38%;">
+          <div class="border border-slate-900 bg-slate-50 p-2 rounded">
+            <div class="bg-slate-900 text-white text-center font-bold text-[10px] uppercase py-1 mb-1.5 tracking-wider">
               Spare / Fitting Issue Challan
             </div>
-            <table class="w-full text-[11px] font-semibold border-collapse">
+            <table class="w-full text-xs font-bold">
               <tr>
-                <td class="text-right pr-1.5 py-0.5 text-slate-600 whitespace-nowrap">Challan No:</td>
-                <td class="text-right py-0.5 font-bold text-indigo-700">
-                  <input type="text" id="challanNo" value="Loading..." class="text-right font-bold w-full outline-none text-indigo-700 text-[11px]" />
+                <td class="text-right pr-2 py-0.5 text-slate-500 text-[11px] whitespace-nowrap">Challan No:</td>
+                <td class="text-right py-0.5">
+                  <input type="text" id="challanNo" value="Loading..." class="text-right font-black w-full outline-none text-blue-700 text-xs bg-transparent" />
                 </td>
               </tr>
               <tr>
-                <td class="text-right pr-1.5 py-0.5 text-slate-600 whitespace-nowrap">Issue Date:</td>
+                <td class="text-right pr-2 py-0.5 text-slate-500 text-[11px] whitespace-nowrap">Issue Date:</td>
                 <td class="text-right py-0.5">
-                  <input type="date" id="issueDate" class="text-right font-bold w-full outline-none text-[11px] bg-transparent" />
+                  <input type="date" id="issueDate" class="text-right font-bold w-full outline-none text-slate-900 text-xs bg-transparent" />
                 </td>
               </tr>
               <tr>
-                <td class="text-right pr-1.5 py-0.5 text-slate-600 whitespace-nowrap">Return Date:</td>
+                <td class="text-right pr-2 py-0.5 text-slate-500 text-[11px] whitespace-nowrap">Return Date:</td>
                 <td class="text-right py-0.5">
-                  <input type="text" id="returnDate" placeholder="--/--/----" onfocus="(this.type='date')" onblur="if(!this.value) { this.type='text'; this.placeholder='--/--/----'; }" class="text-right font-bold w-full outline-none text-[11px] bg-transparent" />
+                  <input type="text" id="returnDate" placeholder="--/--/----" onfocus="(this.type='date')" onblur="if(!this.value) { this.type='text'; this.placeholder='--/--/----'; }" class="text-right font-bold w-full outline-none text-slate-900 text-xs bg-transparent" />
                 </td>
               </tr>
             </table>
@@ -103,96 +105,104 @@
       </tr>
     </table>
 
-    <!-- 2. MIDDLE: TWO COLUMN BOXES -->
-    <table class="w-full border-b-2 border-black pb-3 mb-3 border-collapse">
+    <!-- 2. TWO COLUMN DETAILS BOXES -->
+    <table class="w-full border-collapse pb-3 mb-3 border-b-2 border-slate-900" style="table-layout: fixed;">
       <tr>
-        <!-- Left: ISSUED TO -->
-        <td class="w-[49%] align-top border border-black p-2 bg-slate-50/50">
-          <h4 class="font-bold text-[11px] uppercase border-b border-black pb-0.5 mb-1.5 bg-slate-200 px-1 tracking-wider">
-            Issued To
-          </h4>
-          <div class="space-y-1 text-xs">
+        <!-- Left Box: Issued To -->
+        <td style="width: 49%; vertical-align: top;" class="border border-slate-900 p-2.5 bg-slate-50 rounded">
+          <div class="font-bold text-[11px] uppercase border-b border-slate-900 pb-1 mb-2 bg-slate-200 px-1.5 text-slate-900">
+            Issued To (Bearer Details)
+          </div>
+          <div class="space-y-1.5 text-xs">
             <div>
-              <label class="font-semibold text-slate-600 block text-[9px]">Employee Name:</label>
-              <input type="text" id="carrierName" class="w-full bg-transparent border-b border-dotted border-slate-400 font-bold outline-none uppercase text-xs" />
+              <label class="text-slate-500 block text-[9px] font-bold uppercase">Employee Name:</label>
+              <input type="text" id="carrierName" placeholder="ENTER EMPLOYEE NAME" class="w-full bg-transparent border-b border-slate-300 font-bold outline-none uppercase text-xs py-0.5" />
             </div>
             <div>
-              <label class="font-semibold text-slate-600 block text-[9px]">Contact No:</label>
-              <input type="text" id="carrierPhone" value="+91 " onfocus="ensureCountryCode(this)" oninput="handleMobileInput(this)" class="w-full bg-transparent border-b border-dotted border-slate-400 outline-none font-bold text-xs" />
+              <label class="text-slate-500 block text-[9px] font-bold uppercase">Contact No:</label>
+              <input type="text" id="carrierPhone" value="+91 " onfocus="ensureCountryCode(this)" oninput="handleMobileInput(this)" class="w-full bg-transparent border-b border-slate-300 outline-none font-bold text-xs py-0.5" />
             </div>
           </div>
         </td>
 
-        <td class="w-[2%]"></td><!-- Spacer -->
+        <td style="width: 2%;"></td>
 
-        <!-- Right: DESTINATION SITE -->
-        <td class="w-[49%] align-top border border-black p-2 bg-slate-50/50">
-          <h4 class="font-bold text-[11px] uppercase border-b border-black pb-0.5 mb-1.5 bg-slate-200 px-1 tracking-wider">
-            Destination Site
-          </h4>
-          <div class="space-y-1 text-xs">
+        <!-- Right Box: Destination Site -->
+        <td style="width: 49%; vertical-align: top;" class="border border-slate-900 p-2.5 bg-slate-50 rounded">
+          <div class="font-bold text-[11px] uppercase border-b border-slate-900 pb-1 mb-2 bg-slate-200 px-1.5 text-slate-900">
+            Destination Site Details
+          </div>
+          <div class="space-y-1.5 text-xs">
             <div>
-              <label class="font-semibold text-slate-600 block text-[9px]">Site Name:</label>
-              <input type="text" id="destParty" class="w-full bg-transparent border-b border-dotted border-slate-400 font-bold outline-none uppercase text-xs" />
+              <label class="text-slate-500 block text-[9px] font-bold uppercase">Site Name:</label>
+              <input type="text" id="destParty" placeholder="ENTER SITE NAME" class="w-full bg-transparent border-b border-slate-300 font-bold outline-none uppercase text-xs py-0.5" />
             </div>
             <div>
-              <label class="font-semibold text-slate-600 block text-[9px]">Site Address:</label>
-              <textarea id="destAddress" rows="1" class="w-full bg-transparent border-b border-dotted border-slate-400 outline-none uppercase text-xs no-scrollbar"></textarea>
+              <label class="text-slate-500 block text-[9px] font-bold uppercase">Site Address / Location:</label>
+              <textarea id="destAddress" rows="1" placeholder="ENTER LOCATION" class="w-full bg-transparent border-b border-slate-300 outline-none uppercase text-xs py-0.5 no-scrollbar"></textarea>
             </div>
           </div>
         </td>
       </tr>
     </table>
 
-    <!-- 3. BOTTOM: ITEMS TABLE -->
+    <!-- 3. ITEMS TABLE -->
     <div class="mb-4">
-      <table class="w-full text-xs border border-black border-collapse">
-        <thead class="bg-slate-200 font-bold border-b border-black">
+      <table class="w-full text-xs border border-slate-900 border-collapse">
+        <thead class="bg-slate-900 text-white font-bold text-[11px]">
           <tr>
-            <th class="border border-black p-1 w-10 text-center align-middle">Sr. No.</th>
-            <th class="border border-black p-1 text-left align-middle">Item / Spare / Fitting Description</th>
-            <th class="border border-black p-1 w-20 text-center align-middle">Issued Qty</th>
-            <th class="border border-black p-1 w-20 text-center align-middle">Return Qty</th>
-            <th class="border border-black p-1 w-20 text-center align-middle">Consumed Qty</th>
-            <th class="border border-black p-1 w-8 text-center align-middle action-col no-print">Action</th>
+            <th class="border border-slate-900 p-2 text-center" style="width: 7%;">#</th>
+            <th class="border border-slate-900 p-2 text-left" style="width: 53%;">Item / Spare / Fitting Description</th>
+            <th class="border border-slate-900 p-2 text-center" style="width: 13%;">Issued Qty</th>
+            <th class="border border-slate-900 p-2 text-center" style="width: 13%;">Return Qty</th>
+            <th class="border border-slate-900 p-2 text-center" style="width: 14%;">Consumed Qty</th>
+            <th class="border border-slate-900 p-2 text-center action-col no-print" style="width: 5%;">✖</th>
           </tr>
         </thead>
-        <tbody id="itemRows">
-          <tr>
-            <td class="border border-black p-1 text-center font-bold align-middle sr-no">1</td>
-            <td class="border border-black p-1 relative">
-              <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
-              <div class="custom-suggestions-box hidden no-print"></div>
+        <tbody id="itemRows" class="bg-white">
+          <tr class="item-entry-row">
+            <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 sr-no">1</td>
+            <td class="border border-slate-900 p-1.5">
+              <div class="relative w-full">
+                <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-xs" />
+                <div class="custom-suggestions-box hidden no-print"></div>
+              </div>
             </td>
-            <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
-            <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
-            <td class="border border-black p-1 text-center"><input type="number" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
-            <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty" /></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent" /></td>
+            <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent" /></td>
+            <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
           </tr>
         </tbody>
       </table>
 
       <!-- Add Row Button -->
-      <div class="mt-2 no-print flex justify-start">
-        <button id="addBtn" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow cursor-pointer flex items-center gap-1">
+      <div class="mt-2.5 no-print flex justify-start">
+        <button id="addBtn" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded shadow cursor-pointer flex items-center gap-1.5 transition">
           + Add Item Row
         </button>
       </div>
     </div>
 
-    <!-- 4. SIGNATURES FOOTER -->
-    <table class="w-full border-t-2 border-black pt-3 text-xs">
+    <!-- 4. SIGNATURES & NOTES -->
+    <table class="w-full border-t-2 border-slate-900 pt-3 text-xs" style="table-layout: fixed;">
       <tr>
-        <td class="w-[50%] align-bottom">
-          <label class="font-bold text-[9px] text-slate-500 block mb-0.5">Notes / Instructions:</label>
-          <textarea rows="2" id="notesInput" class="w-[90%] border border-slate-300 p-1 text-xs outline-none uppercase no-scrollbar"></textarea>
+        <td style="width: 50%; vertical-align: top; padding-right: 20px;">
+          <label class="font-bold text-[9px] text-slate-500 uppercase tracking-wider block mb-1">Notes / Instructions:</label>
+          <textarea rows="2" id="notesInput" placeholder="Add any special notes or site conditions..." class="w-full border border-slate-300 rounded p-1.5 text-xs outline-none uppercase no-scrollbar bg-slate-50"></textarea>
         </td>
-        <td class="w-[50%] align-bottom">
-          <table class="w-full pt-6">
+        <td style="width: 50%; vertical-align: bottom;">
+          <table style="width: 100%;">
             <tr>
-              <td class="text-center font-bold border-t border-black w-28 text-xs pb-1">Receiver Signature</td>
-              <td class="w-8"></td>
-              <td class="text-center font-bold border-t border-black w-28 text-xs pb-1">Issued By</td>
+              <td style="width: 45%; text-align: center;">
+                <div class="h-10"></div>
+                <div class="border-t border-slate-900 font-bold text-[11px] uppercase pt-1">Receiver Signature</div>
+              </td>
+              <td style="width: 10%;"></td>
+              <td style="width: 45%; text-align: center;">
+                <div class="h-10"></div>
+                <div class="border-t border-slate-900 font-bold text-[11px] uppercase pt-1">Issued By</div>
+              </td>
             </tr>
           </table>
         </td>
@@ -201,10 +211,10 @@
 
   </div>
 
-  <!-- 5. RECENT LOCAL HISTORY -->
+  <!-- 5. LOCAL HISTORY TABLE -->
   <div class="max-w-4xl w-full bg-white border border-slate-300 rounded-lg shadow-sm p-4 mt-6 no-print">
     <div class="flex justify-between items-center mb-3">
-      <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+      <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
         <span>📋</span> Saved Challans History (In this browser)
       </h3>
       <button onclick="clearAllHistory()" type="button" class="text-xs text-red-600 hover:text-red-800 font-semibold">
@@ -226,7 +236,7 @@
         </thead>
         <tbody id="historyRows">
           <tr>
-            <td colspan="6" class="p-4 text-center text-slate-400">No saved challans found in this browser.</td>
+            <td colspan="6" class="p-4 text-center text-slate-400">No saved challans found.</td>
           </tr>
         </tbody>
       </table>
