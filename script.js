@@ -63,7 +63,7 @@ function showToast(title, message) {
 }
 
 // -------------------------------------------------------------
-// 🔍 CUSTOM LIGHT DROPDOWN (ONLY TOP 2 SUGGESTIONS)
+// 🔍 CUSTOM LIGHT DROPDOWN (TOP 2 MATCHES ONLY)
 // -------------------------------------------------------------
 function showCustomSuggestions(input) {
   const val = input.value.trim().toUpperCase();
@@ -106,7 +106,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Mobile Input: Digits only after +91
+// Mobile Input Digits Only
 function handleMobileInput(input) {
   let val = input.value;
   if (!val.startsWith('+91 ')) val = '+91 ';
@@ -159,10 +159,10 @@ async function fetchNextChallanFromSheet() {
 }
 
 // -------------------------------------------------------------
-// 💾 DIRECT 1-CLICK PDF FILE DOWNLOAD & GOOGLE SHEET SYNC
+// 💾 100% PERFECT PDF DOWNLOAD (CONVERTS INPUTS TO PLAIN TEXT)
 // -------------------------------------------------------------
 async function saveChallanAndDownloadPDF() {
-  // Hide any open suggestion boxes before capturing canvas
+  // Hide suggestions
   document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
 
   const saveBtn = document.getElementById('savePdfBtn');
@@ -180,7 +180,7 @@ async function saveChallanAndDownloadPDF() {
   const compKey = document.getElementById('compSelect').value;
   const notes = document.getElementById('notesInput')?.value || '';
 
-  // Gather items
+  // Collect Items
   const items = [];
   document.querySelectorAll('#itemRows tr').forEach(r => {
     const name = r.querySelector('.item-name')?.value.trim() || '';
@@ -197,7 +197,6 @@ async function saveChallanAndDownloadPDF() {
     return;
   }
 
-  // Button Loading State
   saveBtn.disabled = true;
   btnIcon.innerText = "⏳";
   btnText.innerText = "Downloading...";
@@ -217,11 +216,11 @@ async function saveChallanAndDownloadPDF() {
     savedAt: new Date().toISOString()
   };
 
-  // 1. Background Google Sheet Sync
+  // 1. Google Sheet Sync
   try {
     if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("REPLACE_WITH_YOUR")) {
       const url = `${GOOGLE_SCRIPT_URL}?action=save&data=${encodeURIComponent(JSON.stringify(payload))}`;
-      fetch(url, { mode: 'no-cors' }).catch(err => console.log("Sync error:", err));
+      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync error:", err));
     }
   } catch (err) {
     console.error("Sheet send error:", err);
@@ -230,7 +229,6 @@ async function saveChallanAndDownloadPDF() {
   // 2. Save in Local History
   saveToLocalHistory(payload);
 
-  // 3. Update Local Serial Counter
   let parts = challanNo.split('-');
   if (parts.length === 3) {
     let sNum = parseInt(parts[2], 10);
@@ -239,43 +237,40 @@ async function saveChallanAndDownloadPDF() {
     }
   }
 
-  // 4. DIRECT PDF DOWNLOAD TRIGGER (HTML2Canvas + jsPDF)
+  // 3. Prepare Clean Clone for PDF (Replaces inputs with plain text)
   const element = document.getElementById('challanSheet');
+  const clone = element.cloneNode(true);
+
+  // Remove Action Column and Add Buttons from clone
+  clone.querySelectorAll('.no-print, .action-col').forEach(el => el.remove());
+
+  // Convert inputs in clone to pure text so they never disappear or get truncated
+  clone.querySelectorAll('input, textarea').forEach(inp => {
+    const span = document.createElement('span');
+    span.innerText = inp.value || inp.placeholder || '';
+    span.style.fontWeight = inp.style.fontWeight || 'inherit';
+    span.style.fontSize = 'inherit';
+    span.style.textTransform = 'uppercase';
+    span.style.display = 'inline-block';
+    span.style.width = '100%';
+    span.style.textAlign = inp.classList.contains('text-center') ? 'center' : (inp.classList.contains('text-right') ? 'right' : 'left');
+    inp.parentNode.replaceChild(span, inp);
+  });
+
   const filename = `Challan_${challanNo}_${issueDate || 'Draft'}.pdf`;
+  const opt = {
+    margin:       [6, 6, 6, 6],
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
 
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      scrollY: 0,
-      onclone: (clonedDoc) => {
-        // Copy exact input values into cloned DOM
-        const origInputs = element.querySelectorAll('input, textarea');
-        const clonedInputs = clonedDoc.querySelectorAll('#challanSheet input, #challanSheet textarea');
-        origInputs.forEach((orig, idx) => {
-          if (clonedInputs[idx]) {
-            clonedInputs[idx].value = orig.value;
-            clonedInputs[idx].setAttribute('value', orig.value);
-          }
-        });
-      }
-    });
-
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    // Direct Browser Download
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(filename);
-
-    showToast(`Challan ${challanNo} Downloaded!`, "Saved directly to your Downloads folder.");
+    await html2pdf().set(opt).from(clone).save();
+    showToast(`Challan ${challanNo} Downloaded!`, "Saved directly to Downloads folder.");
   } catch (error) {
-    console.error("Direct PDF download error:", error);
+    console.warn("Direct PDF render error:", error);
     window.print();
   } finally {
     saveBtn.disabled = false;
@@ -375,12 +370,12 @@ function loadChallanFromHistory(index) {
         <td class="border border-black p-1 text-center font-bold align-middle sr-no">${i + 1}</td>
         <td class="border border-black p-1 relative">
           <input type="text" autocomplete="off" value="${item.name}" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
-          <div class="custom-suggestions-box hidden"></div>
+          <div class="custom-suggestions-box hidden no-print"></div>
         </td>
         <td class="border border-black p-1 text-center"><input type="number" value="${item.issuedQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
         <td class="border border-black p-1 text-center"><input type="number" value="${item.returnQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
         <td class="border border-black p-1 text-center"><input type="number" value="${item.consumedQty}" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
-        <td class="border border-black p-1 text-center no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
+        <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
       </tr>
     `).join('');
   }
@@ -420,7 +415,6 @@ window.addEventListener('DOMContentLoaded', () => {
   renderHistoryTable();
 });
 
-// Click + New Challan
 function createNewChallan() {
   fetchNextChallanFromSheet();
   document.getElementById('issueDate').valueAsDate = new Date();
@@ -444,12 +438,12 @@ function createNewChallan() {
       <td class="border border-black p-1 text-center font-bold align-middle sr-no">1</td>
       <td class="border border-black p-1 relative">
         <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
-        <div class="custom-suggestions-box hidden"></div>
+        <div class="custom-suggestions-box hidden no-print"></div>
       </td>
       <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
       <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
       <td class="border border-black p-1 text-center"><input type="number" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
-      <td class="border border-black p-1 text-center no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
+      <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
     </tr>
   `;
 }
@@ -500,12 +494,12 @@ document.getElementById('addBtn').addEventListener('click', function() {
     <td class="border border-black p-1 text-center font-bold align-middle sr-no">${count}</td>
     <td class="border border-black p-1 relative">
       <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
-      <div class="custom-suggestions-box hidden"></div>
+      <div class="custom-suggestions-box hidden no-print"></div>
     </td>
     <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
     <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
     <td class="border border-black p-1 text-center"><input type="number" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
-    <td class="border border-black p-1 text-center no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
+    <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
   `;
   tbody.appendChild(tr);
 });

@@ -1,4 +1,4 @@
-/* Realtime Typing Uppercase */
+/* All Inputs/Textareas Uppercase */
 input[type="text"], 
 textarea, 
 .challan-box td, 
@@ -6,7 +6,7 @@ textarea,
   text-transform: uppercase !important;
 }
 
-/* Hide all browser scrollbars */
+/* Hide scrollbars */
 textarea, .no-scrollbar {
   overflow: hidden !important;
   resize: none !important;
@@ -59,7 +59,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* =========================================================
-   A4 PRINT / PDF STRICT RULES
+   STRICT A4 PRINT / PDF RULES
    ========================================================= */
 @page {
   size: A4 portrait;
@@ -76,7 +76,7 @@ input::placeholder, textarea::placeholder {
     print-color-adjust: exact !important;
   }
   
-  .no-print, .custom-suggestions-box {
+  .no-print, .action-col, .custom-suggestions-box {
     display: none !important;
   }
   
@@ -93,39 +93,6 @@ input::placeholder, textarea::placeholder {
   input[type="date"]::-webkit-calendar-picker-indicator {
     display: none !important;
     -webkit-appearance: none !important;
-  }
-
-  .print-header-row {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: stretch !important;
-    width: 100% !important;
-  }
-
-  .print-header-left {
-    width: 60% !important;
-    max-width: 60% !important;
-    flex: 0 0 60% !important;
-  }
-
-  .print-header-right {
-    width: 38% !important;
-    max-width: 38% !important;
-    flex: 0 0 38% !important;
-  }
-
-  .print-two-col {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    gap: 10px !important;
-  }
-
-  .print-col-half {
-    width: 49% !important;
-    flex: 0 0 49% !important;
   }
 
   input, textarea {
