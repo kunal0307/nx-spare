@@ -1,16 +1,17 @@
-/* Realtime Typing Uppercase */
+/* Realtime Typing Uppercase & Font Size Enforcement */
 input[type="text"], 
 textarea, 
 .challan-box td, 
 .challan-box input {
   text-transform: uppercase !important;
+  font-size: 12px !important;
 }
 
 #compEmail {
   text-transform: lowercase !important;
 }
 
-/* Hide scrollbars completely */
+/* Hide scrollbars */
 textarea, .no-scrollbar {
   overflow: hidden !important;
   resize: none !important;
@@ -29,7 +30,7 @@ input::placeholder, textarea::placeholder {
   opacity: 1;
 }
 
-/* Fixed Float Custom Suggestion Dropdown (Only 2 items, Light Color) */
+/* Light Colored Custom Suggestion Dropdown */
 .custom-suggestions-box {
   position: absolute;
   top: calc(100% + 4px);
@@ -46,7 +47,7 @@ input::placeholder, textarea::placeholder {
 
 .custom-suggestion-item {
   padding: 8px 12px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #1e293b;
   cursor: pointer;
@@ -78,6 +79,7 @@ input::placeholder, textarea::placeholder {
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    font-size: 12px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -107,6 +109,7 @@ input::placeholder, textarea::placeholder {
     resize: none !important;
     font-family: inherit !important;
     text-transform: uppercase !important;
+    font-size: 12px !important;
     padding: 0 !important;
   }
 }

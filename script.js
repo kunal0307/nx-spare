@@ -498,7 +498,7 @@ function calculateConsumed(element) {
   }
 }
 
-// Add Row Directly Under Table
+// Add Row Directly Under Table with 12px Font
 document.getElementById('addBtn').addEventListener('click', function() {
   const tbody = document.getElementById('itemRows');
   const count = tbody.querySelectorAll('tr').length + 1;
@@ -506,20 +506,21 @@ document.getElementById('addBtn').addEventListener('click', function() {
   tr.className = "item-entry-row";
   
   tr.innerHTML = `
-    <td class="border border-slate-900 p-1.5 text-center font-bold text-slate-500 sr-no">${count}</td>
-    <td class="border border-slate-900 p-1.5">
+    <td class="border border-slate-900 p-2 text-center font-bold text-slate-500 sr-no">${count}</td>
+    <td class="border border-slate-900 p-2">
       <div class="relative w-full">
-        <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-xs" />
+        <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Search or type item name..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-900 text-[12px]" />
         <div class="custom-suggestions-box hidden no-print"></div>
       </div>
     </td>
-    <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty" /></td>
-    <td class="border border-slate-900 p-1.5 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent" /></td>
-    <td class="border border-slate-900 p-1.5 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent" /></td>
-    <td class="border border-slate-900 p-1.5 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
+    <td class="border border-slate-900 p-2 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-issued-qty text-[12px]" /></td>
+    <td class="border border-slate-900 p-2 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-900 item-return-qty bg-transparent text-[12px]" /></td>
+    <td class="border border-slate-900 p-2 text-center"><input type="number" class="w-full text-center outline-none font-black text-blue-700 item-consumed-qty bg-transparent text-[12px]" /></td>
+    <td class="border border-slate-900 p-2 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-500 hover:text-red-700 font-bold text-xs">✖</button></td>
   `;
   tbody.appendChild(tr);
 });
+
 
 function deleteRow(btn) {
   const row = btn.closest('tr');
