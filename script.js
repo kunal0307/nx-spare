@@ -63,54 +63,50 @@ function showToast(title, message) {
 }
 
 // -------------------------------------------------------------
-// 🔍 INSTANT SEARCH SUGGESTIONS (FIXED TOUCH & CLICK)
+// 🔍 CUSTOM LIGHT DROPDOWN (TOP 2 MATCHES ONLY)
 // -------------------------------------------------------------
-function showSuggestions(input) {
+function showCustomSuggestions(input) {
   const val = input.value.trim().toUpperCase();
   const box = input.parentElement.querySelector('.custom-suggestions-box');
   if (!box) return;
-
+  
   if (!val) {
-    renderSuggestionsBox(box, input, masterSpares.slice(0, 2));
+    renderSuggestions(box, input, masterSpares.slice(0, 2));
     return;
   }
 
   const matches = masterSpares.filter(item => item.toUpperCase().includes(val)).slice(0, 2);
   
   if (matches.length > 0) {
-    renderSuggestionsBox(box, input, matches);
+    renderSuggestions(box, input, matches);
   } else {
     box.classList.add('hidden');
   }
 }
 
-function renderSuggestionsBox(box, input, items) {
-  box.innerHTML = '';
-  items.forEach(it => {
-    const div = document.createElement('div');
-    div.className = 'custom-suggestion-item';
-    div.innerText = it;
-    
-    // onpointerdown captures touch and click before blur
-    div.onpointerdown = function(e) {
-      e.preventDefault();
-      input.value = it;
-      box.classList.add('hidden');
-    };
-    
-    box.appendChild(div);
-  });
+function renderSuggestions(box, input, items) {
+  box.innerHTML = items.map(it => `
+    <div class="custom-suggestion-item" onmousedown="selectSuggestion(this, '${it}')">
+      ${it}
+    </div>
+  `).join('');
   box.classList.remove('hidden');
 }
 
-// Close suggestions on outside click
-document.addEventListener('pointerdown', function(e) {
+function selectSuggestion(element, value) {
+  const td = element.closest('td');
+  const input = td.querySelector('input.item-name');
+  input.value = value;
+  td.querySelector('.custom-suggestions-box').classList.add('hidden');
+}
+
+document.addEventListener('click', function(e) {
   if (!e.target.closest('td')) {
     document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
   }
 });
 
-// Mobile Input Validation
+// Mobile Input Digits Only
 function handleMobileInput(input) {
   let val = input.value;
   if (!val.startsWith('+91 ')) val = '+91 ';
@@ -122,7 +118,7 @@ function ensureCountryCode(input) {
   if (!input.value.startsWith('+91 ')) input.value = '+91 ';
 }
 
-// Uppercase Auto Convert
+// Real-time Uppercase Converter
 document.addEventListener('input', function (e) {
   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
     if (e.target.type === 'text' || e.target.tagName === 'TEXTAREA') {
@@ -163,9 +159,10 @@ async function fetchNextChallanFromSheet() {
 }
 
 // -------------------------------------------------------------
-// 💾 100% BULLETPROOF DIRECT PDF DOWNLOAD
+// 💾 100% PERFECT PDF DOWNLOAD (CONVERTS INPUTS TO PLAIN TEXT)
 // -------------------------------------------------------------
 async function saveChallanAndDownloadPDF() {
+  // Hide suggestions
   document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
 
   const saveBtn = document.getElementById('savePdfBtn');
@@ -223,10 +220,10 @@ async function saveChallanAndDownloadPDF() {
   try {
     if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("REPLACE_WITH_YOUR")) {
       const url = `${GOOGLE_SCRIPT_URL}?action=save&data=${encodeURIComponent(JSON.stringify(payload))}`;
-      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync:", err));
+      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync error:", err));
     }
   } catch (err) {
-    console.error("Sheet error:", err);
+    console.error("Sheet send error:", err);
   }
 
   // 2. Save in Local History
@@ -240,42 +237,40 @@ async function saveChallanAndDownloadPDF() {
     }
   }
 
-  // 3. Clone & Convert Inputs to Printed Text
+  // 3. Prepare Clean Clone for PDF (Replaces inputs with plain text)
   const element = document.getElementById('challanSheet');
+  const clone = element.cloneNode(true);
+
+  // Remove Action Column and Add Buttons from clone
+  clone.querySelectorAll('.no-print, .action-col').forEach(el => el.remove());
+
+  // Convert inputs in clone to pure text so they never disappear or get truncated
+  clone.querySelectorAll('input, textarea').forEach(inp => {
+    const span = document.createElement('span');
+    span.innerText = inp.value || inp.placeholder || '';
+    span.style.fontWeight = inp.style.fontWeight || 'inherit';
+    span.style.fontSize = 'inherit';
+    span.style.textTransform = 'uppercase';
+    span.style.display = 'inline-block';
+    span.style.width = '100%';
+    span.style.textAlign = inp.classList.contains('text-center') ? 'center' : (inp.classList.contains('text-right') ? 'right' : 'left');
+    inp.parentNode.replaceChild(span, inp);
+  });
+
   const filename = `Challan_${challanNo}_${issueDate || 'Draft'}.pdf`;
+  const opt = {
+    margin:       [6, 6, 6, 6],
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
 
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      scrollY: 0,
-      ignoreElements: (element) => element.classList.contains('no-print'),
-      onclone: (clonedDoc) => {
-        const origInputs = element.querySelectorAll('input, textarea');
-        const clonedInputs = clonedDoc.querySelectorAll('#challanSheet input, #challanSheet textarea');
-        origInputs.forEach((orig, idx) => {
-          if (clonedInputs[idx]) {
-            clonedInputs[idx].value = orig.value;
-            clonedInputs[idx].setAttribute('value', orig.value);
-          }
-        });
-      }
-    });
-
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(filename);
-
-    showToast(`Challan ${challanNo} Saved!`, "PDF downloaded successfully.");
+    await html2pdf().set(opt).from(clone).save();
+    showToast(`Challan ${challanNo} Downloaded!`, "Saved directly to Downloads folder.");
   } catch (error) {
-    console.error("PDF Generate Error:", error);
+    console.warn("Direct PDF render error:", error);
     window.print();
   } finally {
     saveBtn.disabled = false;
@@ -283,6 +278,7 @@ async function saveChallanAndDownloadPDF() {
     btnText.innerText = "Save as PDF";
     renderHistoryTable();
 
+    // Auto-update next serial number
     setTimeout(() => {
       fetchNextChallanFromSheet();
     }, 1000);
@@ -319,13 +315,13 @@ function renderHistoryTable() {
 
   tbody.innerHTML = history.map((c, index) => `
     <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
-      <td class="p-2 font-bold text-blue-700">${c.challanNo}</td>
+      <td class="p-2 font-bold text-indigo-700">${c.challanNo}</td>
       <td class="p-2">${c.issueDate || '-'}</td>
       <td class="p-2 font-semibold text-slate-800">${c.employeeName || '-'}</td>
       <td class="p-2">${c.siteName || '-'}</td>
       <td class="p-2 text-center font-bold">${c.items ? c.items.length : 0} items</td>
       <td class="p-2 text-center">
-        <button onclick="loadChallanFromHistory(${index})" type="button" class="bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-2 py-1 rounded text-xs mr-1 cursor-pointer">
+        <button onclick="loadChallanFromHistory(${index})" type="button" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold px-2 py-1 rounded text-xs mr-1 cursor-pointer">
           👁️ View
         </button>
         <button onclick="deleteHistoryItem(${index})" type="button" class="text-red-500 hover:text-red-700 font-bold px-1.5 py-1 text-xs cursor-pointer">
@@ -371,9 +367,9 @@ function loadChallanFromHistory(index) {
   if (c.items && c.items.length > 0) {
     tbody.innerHTML = c.items.map((item, i) => `
       <tr>
-        <td class="border border-black p-1 text-center font-bold sr-no">${i + 1}</td>
+        <td class="border border-black p-1 text-center font-bold align-middle sr-no">${i + 1}</td>
         <td class="border border-black p-1 relative">
-          <input type="text" autocomplete="off" value="${item.name}" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Type item name..." class="w-full outline-none item-name uppercase bg-transparent font-medium" />
+          <input type="text" autocomplete="off" value="${item.name}" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
           <div class="custom-suggestions-box hidden no-print"></div>
         </td>
         <td class="border border-black p-1 text-center"><input type="number" value="${item.issuedQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
@@ -405,7 +401,7 @@ function clearAllHistory() {
 }
 
 // -------------------------------------------------------------
-// INITIALIZATION & HANDLERS
+// INITIALIZATION & UI HANDLERS
 // -------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('issueDate').valueAsDate = new Date();
@@ -439,9 +435,9 @@ function createNewChallan() {
   const tbody = document.getElementById('itemRows');
   tbody.innerHTML = `
     <tr>
-      <td class="border border-black p-1 text-center font-bold sr-no">1</td>
+      <td class="border border-black p-1 text-center font-bold align-middle sr-no">1</td>
       <td class="border border-black p-1 relative">
-        <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Type item name (e.g. MC4, CABLE)..." class="w-full outline-none item-name uppercase bg-transparent font-medium" />
+        <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
         <div class="custom-suggestions-box hidden no-print"></div>
       </td>
       <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
@@ -488,16 +484,16 @@ function calculateConsumed(element) {
   }
 }
 
-// Add Row
+// Add Row with Spares Suggestions
 document.getElementById('addBtn').addEventListener('click', function() {
   const tbody = document.getElementById('itemRows');
   const count = tbody.querySelectorAll('tr').length + 1;
   const tr = document.createElement('tr');
   
   tr.innerHTML = `
-    <td class="border border-black p-1 text-center font-bold sr-no">${count}</td>
+    <td class="border border-black p-1 text-center font-bold align-middle sr-no">${count}</td>
     <td class="border border-black p-1 relative">
-      <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Type item name (e.g. MC4, CABLE)..." class="w-full outline-none item-name uppercase bg-transparent font-medium" />
+      <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Type or select..." class="w-full outline-none item-name uppercase bg-transparent" />
       <div class="custom-suggestions-box hidden no-print"></div>
     </td>
     <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>

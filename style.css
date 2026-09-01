@@ -6,10 +6,6 @@ textarea,
   text-transform: uppercase !important;
 }
 
-#compEmail {
-  text-transform: lowercase !important;
-}
-
 /* Hide scrollbars */
 textarea, .no-scrollbar {
   overflow: hidden !important;
@@ -28,27 +24,26 @@ input::placeholder, textarea::placeholder {
   opacity: 1;
 }
 
-/* Light Colored Custom Suggestion Dropdown */
+/* Light Colored Custom Suggestion Box */
 .custom-suggestions-box {
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
-  min-width: 260px;
+  min-width: 250px;
   background-color: #ffffff !important;
-  border: 1px solid #94a3b8 !important;
-  border-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 50;
   overflow: hidden;
-  margin-top: 2px;
 }
 
 .custom-suggestion-item {
-  padding: 8px 10px;
+  padding: 6px 10px;
   font-size: 11px;
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 600;
+  color: #1e293b;
   cursor: pointer;
   border-bottom: 1px solid #f1f5f9;
   background-color: #ffffff;
@@ -58,13 +53,13 @@ input::placeholder, textarea::placeholder {
   border-bottom: none;
 }
 
-.custom-suggestion-item:hover, .custom-suggestion-item:active {
-  background-color: #e2e8f0 !important;
-  color: #1d4ed8 !important;
+.custom-suggestion-item:hover {
+  background-color: #f1f5f9 !important;
+  color: #2563eb !important;
 }
 
 /* =========================================================
-   A4 PRINT / PDF STRICT RULES
+   STRICT A4 PRINT / PDF RULES
    ========================================================= */
 @page {
   size: A4 portrait;
