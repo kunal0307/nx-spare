@@ -63,44 +63,48 @@ function showToast(title, message) {
 }
 
 // -------------------------------------------------------------
-// 🔍 CUSTOM LIGHT DROPDOWN (TOP 2 MATCHES ONLY)
+// 🔍 INSTANT SEARCH SUGGESTIONS (FIXED TOUCH & CLICK)
 // -------------------------------------------------------------
-function showCustomSuggestions(input) {
+function showSuggestions(input) {
   const val = input.value.trim().toUpperCase();
   const box = input.parentElement.querySelector('.custom-suggestions-box');
   if (!box) return;
-  
+
   if (!val) {
-    renderSuggestions(box, input, masterSpares.slice(0, 2));
+    renderSuggestionsBox(box, input, masterSpares.slice(0, 2));
     return;
   }
 
   const matches = masterSpares.filter(item => item.toUpperCase().includes(val)).slice(0, 2);
   
   if (matches.length > 0) {
-    renderSuggestions(box, input, matches);
+    renderSuggestionsBox(box, input, matches);
   } else {
     box.classList.add('hidden');
   }
 }
 
-function renderSuggestions(box, input, items) {
-  box.innerHTML = items.map(it => `
-    <div class="custom-suggestion-item" onmousedown="selectSuggestion(this, '${it}')">
-      ${it}
-    </div>
-  `).join('');
+function renderSuggestionsBox(box, input, items) {
+  box.innerHTML = '';
+  items.forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'custom-suggestion-item';
+    div.innerText = it;
+    
+    // onpointerdown captures touch and click before blur
+    div.onpointerdown = function(e) {
+      e.preventDefault();
+      input.value = it;
+      box.classList.add('hidden');
+    };
+    
+    box.appendChild(div);
+  });
   box.classList.remove('hidden');
 }
 
-function selectSuggestion(element, value) {
-  const td = element.closest('td');
-  const input = td.querySelector('input.item-name');
-  input.value = value;
-  td.querySelector('.custom-suggestions-box').classList.add('hidden');
-}
-
-document.addEventListener('click', function(e) {
+// Close suggestions on outside click
+document.addEventListener('pointerdown', function(e) {
   if (!e.target.closest('td')) {
     document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
   }
@@ -118,7 +122,7 @@ function ensureCountryCode(input) {
   if (!input.value.startsWith('+91 ')) input.value = '+91 ';
 }
 
-// Uppercase Converter
+// Uppercase Auto Convert
 document.addEventListener('input', function (e) {
   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
     if (e.target.type === 'text' || e.target.tagName === 'TEXTAREA') {
@@ -159,7 +163,7 @@ async function fetchNextChallanFromSheet() {
 }
 
 // -------------------------------------------------------------
-// 💾 100% ACCURATE PDF DOWNLOAD (TEXT-CLONE ENGINE)
+// 💾 100% BULLETPROOF DIRECT PDF DOWNLOAD
 // -------------------------------------------------------------
 async function saveChallanAndDownloadPDF() {
   document.querySelectorAll('.custom-suggestions-box').forEach(b => b.classList.add('hidden'));
@@ -179,7 +183,7 @@ async function saveChallanAndDownloadPDF() {
   const compKey = document.getElementById('compSelect').value;
   const notes = document.getElementById('notesInput')?.value || '';
 
-  // Gather Items
+  // Collect Items
   const items = [];
   document.querySelectorAll('#itemRows tr').forEach(r => {
     const name = r.querySelector('.item-name')?.value.trim() || '';
@@ -219,13 +223,13 @@ async function saveChallanAndDownloadPDF() {
   try {
     if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("REPLACE_WITH_YOUR")) {
       const url = `${GOOGLE_SCRIPT_URL}?action=save&data=${encodeURIComponent(JSON.stringify(payload))}`;
-      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync error:", err));
+      fetch(url, { mode: 'no-cors' }).catch(err => console.warn("Sheet sync:", err));
     }
   } catch (err) {
-    console.error("Sheet send error:", err);
+    console.error("Sheet error:", err);
   }
 
-  // 2. Local History & Counter
+  // 2. Save in Local History
   saveToLocalHistory(payload);
 
   let parts = challanNo.split('-');
@@ -236,44 +240,46 @@ async function saveChallanAndDownloadPDF() {
     }
   }
 
-  // 3. Clean Text Cloner to Prevent PDF Blank Text / Overlap
+  // 3. Clone & Convert Inputs to Printed Text
   const element = document.getElementById('challanSheet');
-  const clone = element.cloneNode(true);
-
-  // Remove Action Column and non-printable elements
-  clone.querySelectorAll('.no-print, .action-col').forEach(el => el.remove());
-
-  // Convert inputs to plain spans
-  clone.querySelectorAll('input, textarea').forEach(inp => {
-    const span = document.createElement('span');
-    span.innerText = inp.value || inp.placeholder || '';
-    span.style.fontWeight = inp.style.fontWeight || 'inherit';
-    span.style.fontSize = 'inherit';
-    span.style.textTransform = 'uppercase';
-    span.style.display = 'inline-block';
-    span.style.width = '100%';
-    span.style.textAlign = inp.classList.contains('text-center') ? 'center' : (inp.classList.contains('text-right') ? 'right' : 'left');
-    inp.parentNode.replaceChild(span, inp);
-  });
-
   const filename = `Challan_${challanNo}_${issueDate || 'Draft'}.pdf`;
-  const opt = {
-    margin:       [5, 5, 5, 5],
-    filename:     filename,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
 
   try {
-    await html2pdf().set(opt).from(clone).save();
-    showToast(`Challan ${challanNo} Downloaded!`, "Saved directly to Downloads folder.");
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      scrollY: 0,
+      ignoreElements: (element) => element.classList.contains('no-print'),
+      onclone: (clonedDoc) => {
+        const origInputs = element.querySelectorAll('input, textarea');
+        const clonedInputs = clonedDoc.querySelectorAll('#challanSheet input, #challanSheet textarea');
+        origInputs.forEach((orig, idx) => {
+          if (clonedInputs[idx]) {
+            clonedInputs[idx].value = orig.value;
+            clonedInputs[idx].setAttribute('value', orig.value);
+          }
+        });
+      }
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(filename);
+
+    showToast(`Challan ${challanNo} Saved!`, "PDF downloaded successfully.");
   } catch (error) {
-    console.warn("Direct PDF render fallback:", error);
+    console.error("PDF Generate Error:", error);
     window.print();
   } finally {
     saveBtn.disabled = false;
-    btnIcon.innerText = "📥";
+    btnIcon.innerText = "💾";
     btnText.innerText = "Save as PDF";
     renderHistoryTable();
 
@@ -312,17 +318,17 @@ function renderHistoryTable() {
   }
 
   tbody.innerHTML = history.map((c, index) => `
-    <tr class="hover:bg-slate-50 transition">
-      <td class="p-2.5 font-bold text-indigo-600">${c.challanNo}</td>
-      <td class="p-2.5 text-slate-600">${c.issueDate || '-'}</td>
-      <td class="p-2.5 font-semibold text-slate-800">${c.employeeName || '-'}</td>
-      <td class="p-2.5 text-slate-700">${c.siteName || '-'}</td>
-      <td class="p-2.5 text-center font-bold text-slate-600">${c.items ? c.items.length : 0} items</td>
-      <td class="p-2.5 text-center">
-        <button onclick="loadChallanFromHistory(${index})" type="button" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold px-2 py-1 rounded text-xs mr-1 cursor-pointer">
+    <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
+      <td class="p-2 font-bold text-blue-700">${c.challanNo}</td>
+      <td class="p-2">${c.issueDate || '-'}</td>
+      <td class="p-2 font-semibold text-slate-800">${c.employeeName || '-'}</td>
+      <td class="p-2">${c.siteName || '-'}</td>
+      <td class="p-2 text-center font-bold">${c.items ? c.items.length : 0} items</td>
+      <td class="p-2 text-center">
+        <button onclick="loadChallanFromHistory(${index})" type="button" class="bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-2 py-1 rounded text-xs mr-1 cursor-pointer">
           👁️ View
         </button>
-        <button onclick="deleteHistoryItem(${index})" type="button" class="text-slate-400 hover:text-red-600 font-bold px-1.5 py-1 text-xs cursor-pointer">
+        <button onclick="deleteHistoryItem(${index})" type="button" class="text-red-500 hover:text-red-700 font-bold px-1.5 py-1 text-xs cursor-pointer">
           🗑️
         </button>
       </td>
@@ -364,16 +370,16 @@ function loadChallanFromHistory(index) {
   const tbody = document.getElementById('itemRows');
   if (c.items && c.items.length > 0) {
     tbody.innerHTML = c.items.map((item, i) => `
-      <tr class="hover:bg-slate-50 transition">
-        <td class="p-2 text-center font-bold text-slate-500 sr-no">${i + 1}</td>
-        <td class="p-2 relative">
-          <input type="text" autocomplete="off" value="${item.name}" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Search or type item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-800" />
+      <tr>
+        <td class="border border-black p-1 text-center font-bold sr-no">${i + 1}</td>
+        <td class="border border-black p-1 relative">
+          <input type="text" autocomplete="off" value="${item.name}" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Type item name..." class="w-full outline-none item-name uppercase bg-transparent font-medium" />
           <div class="custom-suggestions-box hidden no-print"></div>
         </td>
-        <td class="p-2 text-center"><input type="number" value="${item.issuedQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-800 item-issued-qty bg-slate-50 rounded py-0.5 border border-slate-200" /></td>
-        <td class="p-2 text-center"><input type="number" value="${item.returnQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold text-slate-800 item-return-qty bg-slate-50 rounded py-0.5 border border-slate-200" /></td>
-        <td class="p-2 text-center"><input type="number" value="${item.consumedQty}" class="w-full text-center outline-none font-extrabold text-indigo-700 item-consumed-qty bg-indigo-50/50 rounded py-0.5 border border-indigo-200" /></td>
-        <td class="p-2 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-slate-400 hover:text-red-600 font-bold text-xs p-1">✖</button></td>
+        <td class="border border-black p-1 text-center"><input type="number" value="${item.issuedQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
+        <td class="border border-black p-1 text-center"><input type="number" value="${item.returnQty}" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
+        <td class="border border-black p-1 text-center"><input type="number" value="${item.consumedQty}" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
+        <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
       </tr>
     `).join('');
   }
@@ -399,7 +405,7 @@ function clearAllHistory() {
 }
 
 // -------------------------------------------------------------
-// INITIALIZATION & UI HANDLERS
+// INITIALIZATION & HANDLERS
 // -------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('issueDate').valueAsDate = new Date();
@@ -432,16 +438,16 @@ function createNewChallan() {
 
   const tbody = document.getElementById('itemRows');
   tbody.innerHTML = `
-    <tr class="hover:bg-slate-50 transition">
-      <td class="p-2 text-center font-bold text-slate-500 sr-no">1</td>
-      <td class="p-2 relative">
-        <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Search or type item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-800" />
+    <tr>
+      <td class="border border-black p-1 text-center font-bold sr-no">1</td>
+      <td class="border border-black p-1 relative">
+        <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Type item name (e.g. MC4, CABLE)..." class="w-full outline-none item-name uppercase bg-transparent font-medium" />
         <div class="custom-suggestions-box hidden no-print"></div>
       </td>
-      <td class="p-2 text-center"><input type="number" oninput="calculateConsumed(this)" placeholder="0" class="w-full text-center outline-none font-bold text-slate-800 item-issued-qty bg-slate-50 rounded py-0.5 border border-slate-200" /></td>
-      <td class="p-2 text-center"><input type="number" oninput="calculateConsumed(this)" placeholder="0" class="w-full text-center outline-none font-bold text-slate-800 item-return-qty bg-slate-50 rounded py-0.5 border border-slate-200" /></td>
-      <td class="p-2 text-center"><input type="number" placeholder="0" class="w-full text-center outline-none font-extrabold text-indigo-700 item-consumed-qty bg-indigo-50/50 rounded py-0.5 border border-indigo-200" /></td>
-      <td class="p-2 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-slate-400 hover:text-red-600 font-bold text-xs p-1">✖</button></td>
+      <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
+      <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
+      <td class="border border-black p-1 text-center"><input type="number" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
+      <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
     </tr>
   `;
 }
@@ -487,18 +493,17 @@ document.getElementById('addBtn').addEventListener('click', function() {
   const tbody = document.getElementById('itemRows');
   const count = tbody.querySelectorAll('tr').length + 1;
   const tr = document.createElement('tr');
-  tr.className = "hover:bg-slate-50 transition";
   
   tr.innerHTML = `
-    <td class="p-2 text-center font-bold text-slate-500 sr-no">${count}</td>
-    <td class="p-2 relative">
-      <input type="text" autocomplete="off" oninput="showCustomSuggestions(this)" onfocus="showCustomSuggestions(this)" placeholder="Search or type item..." class="w-full outline-none item-name uppercase bg-transparent font-semibold text-slate-800" />
+    <td class="border border-black p-1 text-center font-bold sr-no">${count}</td>
+    <td class="border border-black p-1 relative">
+      <input type="text" autocomplete="off" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" placeholder="Type item name (e.g. MC4, CABLE)..." class="w-full outline-none item-name uppercase bg-transparent font-medium" />
       <div class="custom-suggestions-box hidden no-print"></div>
     </td>
-    <td class="p-2 text-center"><input type="number" oninput="calculateConsumed(this)" placeholder="0" class="w-full text-center outline-none font-bold text-slate-800 item-issued-qty bg-slate-50 rounded py-0.5 border border-slate-200" /></td>
-    <td class="p-2 text-center"><input type="number" oninput="calculateConsumed(this)" placeholder="0" class="w-full text-center outline-none font-bold text-slate-800 item-return-qty bg-slate-50 rounded py-0.5 border border-slate-200" /></td>
-    <td class="p-2 text-center"><input type="number" placeholder="0" class="w-full text-center outline-none font-extrabold text-indigo-700 item-consumed-qty bg-indigo-50/50 rounded py-0.5 border border-indigo-200" /></td>
-    <td class="p-2 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-slate-400 hover:text-red-600 font-bold text-xs p-1">✖</button></td>
+    <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-issued-qty" /></td>
+    <td class="border border-black p-1 text-center"><input type="number" oninput="calculateConsumed(this)" class="w-full text-center outline-none font-bold item-return-qty bg-transparent" /></td>
+    <td class="border border-black p-1 text-center"><input type="number" class="w-full text-center outline-none font-bold item-consumed-qty bg-transparent" /></td>
+    <td class="border border-black p-1 text-center action-col no-print"><button type="button" onclick="deleteRow(this)" class="text-red-600 font-bold text-xs">✖</button></td>
   `;
   tbody.appendChild(tr);
 });

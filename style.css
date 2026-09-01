@@ -6,6 +6,10 @@ textarea,
   text-transform: uppercase !important;
 }
 
+#compEmail {
+  text-transform: lowercase !important;
+}
+
 /* Hide scrollbars */
 textarea, .no-scrollbar {
   overflow: hidden !important;
@@ -21,11 +25,10 @@ textarea::-webkit-scrollbar, .no-scrollbar::-webkit-scrollbar {
 input::placeholder, textarea::placeholder {
   color: #94a3b8;
   font-weight: 500;
-  text-transform: none;
   opacity: 1;
 }
 
-/* Clean Custom Suggestion Dropdown */
+/* Light Colored Custom Suggestion Dropdown */
 .custom-suggestions-box {
   position: absolute;
   top: 100%;
@@ -33,36 +36,35 @@ input::placeholder, textarea::placeholder {
   width: 100%;
   min-width: 260px;
   background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  border: 1px solid #94a3b8 !important;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .custom-suggestion-item {
-  padding: 8px 12px;
+  padding: 8px 10px;
   font-size: 11px;
-  font-weight: 600;
-  color: #334155;
+  font-weight: 700;
+  color: #0f172a;
   cursor: pointer;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid #f1f5f9;
   background-color: #ffffff;
-  transition: all 0.15s ease;
 }
 
 .custom-suggestion-item:last-child {
   border-bottom: none;
 }
 
-.custom-suggestion-item:hover {
-  background-color: #f1f5f9 !important;
-  color: #4f46e5 !important;
+.custom-suggestion-item:hover, .custom-suggestion-item:active {
+  background-color: #e2e8f0 !important;
+  color: #1d4ed8 !important;
 }
 
 /* =========================================================
-   A4 PRINT & PDF RULES
+   A4 PRINT / PDF STRICT RULES
    ========================================================= */
 @page {
   size: A4 portrait;
@@ -84,13 +86,12 @@ input::placeholder, textarea::placeholder {
   }
   
   .challan-box {
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 0 !important;
+    border: 2px solid #000000 !important;
     box-shadow: none !important;
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 12px !important;
+    padding: 8px !important;
     box-sizing: border-box !important;
   }
 
